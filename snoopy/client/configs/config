@@ -1,0 +1,5 @@
+
+arch=linux
+device_id=usbwlan
+iface=wlan0
+delay_between_syncs=10

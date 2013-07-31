@@ -38,10 +38,10 @@
 # Input validation! APs with a CSV metadata may break things. Convert SSID to Hex maybe?
 # Tshark needs to be upgraded in the Maemo repos - it's super old, and causes trouble.
 
-snoopyDir=$(cd $(dirname "$0"); pwd)
-cd $snoopyDir
-source $snoopyDir/configs/config
-save_path=$snoopyDir/snoopy_data/$device_id
+snoopyDir="$(cd $(dirname "$0"); pwd)"
+cd "$snoopyDir"
+source "$snoopyDir/configs/config"
+save_path="$snoopyDir/snoopy_data/$device_id"
 
 #Procs for probesniff
 t_pid=313373133
@@ -114,7 +114,7 @@ n900_sniff(){
 	t_pid=$!
 }
 linux_sniff(){
-	tshark -q -S -l -i $iface -R 'wlan.fc.type_subtype eq 4' -T fields -e wlan.sa -e wlan_mgt.ssid -e radiotap.dbm_antsignal -e frame.time -E separator=, -E quote=d |sed -u "s/^/\"$device_id\",\"$run_id\",\"$location\",/" >> $save_path/probe_data.txt &
+	tshark -l -i $iface -R 'wlan.fc.type_subtype eq 4' -T fields -e wlan.sa -e wlan_mgt.ssid -e radiotap.dbm_antsignal -e frame.time -E separator=, -E quote=d | sed -u "s/^/\"$device_id\",\"$run_id\",\"$location\",/" >> "$save_path/probe_data.txt" &
 	t_pid=$!
 }
 
@@ -154,7 +154,7 @@ if [[ "$arch" == "n900" ]]; then
                 tshark -q -b filesize:512 -b files:1 -w ~/.tmp/probes -S -l -i $iface -R 'wlan.fc.type_subtype eq 4' -T fields -e wlan.sa -e wlan_mgt.ssid -e radiotap.dbm_antsignal -e frame.time -E separator=, -E quote=d |/usr/bin/gnu/sed -u "s/^/\"$device_id\",\"$run_id\",\"$location\",/" >> $save_path/probe_data.txt &
 
         elif [[ "$arch" == "linux" ]]; then
-		
+
                 tshark -q -S -l -i $iface -R 'wlan.fc.type_subtype eq 4' -T fields -e wlan.sa -e wlan_mgt.ssid -e radiotap.dbm_antsignal -e frame.time -E separator=, -E quote=d |sed -u "s/^/\"$device_id\",\"$run_id\",\"$location\",/" >> $save_path/probe_data.txt &
         fi
         t_pid=$!
@@ -430,7 +430,7 @@ function sync {
 	key=$snoopyDir/configs/ssh/id_rsa
 	# Backgrounded
 	# Will including $snoopyDir variable disable ability to specify absolute commands restricting rsync?
-	while [ -r /tmp/snoopy_go ]; do rsync -e "ssh -i $key -o StrictHostKeyChecking=no" -rzt $snoopyDir/snoopy_data/ $sync_user@$sync_server:$upload_path &> /dev/null; sleep $delay_between_syncs; done &
+	while [ -r /tmp/snoopy_go ]; do rsync -e "ssh -i $key -o StrictHostKeyChecking=no" -rzt "$snoopyDir/snoopy_data" $sync_user@$sync_server:$upload_path &> /dev/null; sleep $delay_between_syncs; done &
 	s_pid=$!
 }
 
@@ -449,14 +449,14 @@ function run_stuff {
 	if [ "$rogue" -eq "1" ] && [ "$probe" -eq "1" ]; then
 		rogue_sniff_hdr
 		injection_on
-                start_rogue_ap
+        start_rogue_ap
 		run_probe_sniffer
 		gps_logger
 		
 	elif [ "$probe" -eq "1" ]; then
 		run_probe_sniffer_hdr
 		monitor_mode_on
-                run_probe_sniffer
+		run_probe_sniffer
 		gps_logger
 
 	elif [ "$rogue" -eq "1" ]; then
